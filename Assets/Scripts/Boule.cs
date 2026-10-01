@@ -23,6 +23,9 @@ public class Boule : MonoBehaviour
     // Référence au Rigidbody de la boule pour appliquer la physique.
     private Rigidbody rigidbody;
 
+    // Référence au Rigidbody de la boule pour appliquer la physique.
+    private GameObject prefabCharge;
+
     /// <summary>
     /// Obtient la vélocité actuelle de la boule.
     /// </summary>
@@ -33,6 +36,8 @@ public class Boule : MonoBehaviour
     private int nombreDeChargeAcceleration = 0;
 
     private bool chargeEnCours = false;
+
+    public GameObject[] charges;
 
     private void Start()
     {
@@ -139,9 +144,9 @@ public class Boule : MonoBehaviour
             {
                 StartCoroutine(ForceDeDeplacementAccelerSurUneSeconde());
             }    
-        }
-            
+        }   
     }
+
 
  
     /// <summary>
@@ -157,5 +162,23 @@ public class Boule : MonoBehaviour
         forceDeplacement = forceInitiale;
         nombreDeChargeAcceleration--;
         chargeEnCours = false;
+    }
+
+    /// <summary>
+    /// Methode pour ajouter des charges dans l'interface
+    /// on compte le nombre de charge presenrt dans la scene
+    /// on compare au nombre de harge cumuler 
+    /// on ajoute le nombre manquant
+    /// source: https://discussions.unity.com/t/how-do-i-create-a-list-of-all-objects-in-scene-with-a-tag/212189
+    /// </summary>
+    private void InstancierChargeDansInterface()
+    {
+        charges = GameObject.FindGameObjectsWithTag("charge");
+
+        int difference = nombreDeChargeAcceleration - charges.Length;
+
+        for (int i = 0; i < difference; i++) {
+            GameObject charge = Instantiate(prefabCharge, transform.position, Quaternion.identity);
+        }
     }
 }
