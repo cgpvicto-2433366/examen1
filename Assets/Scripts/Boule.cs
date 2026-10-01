@@ -32,6 +32,8 @@ public class Boule : MonoBehaviour
 
     private int nombreDeChargeAcceleration = 0;
 
+    private bool chargeEnCours = false;
+
     private void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
@@ -131,27 +133,29 @@ public class Boule : MonoBehaviour
         if (!DirectionActif)
             return;
 
-        StartCoroutine(ForceDeDeplacementAccelerSurUneSeconde());
+        if (nombreDeChargeAcceleration > 0)
+        {
+            if (!chargeEnCours)
+            {
+                StartCoroutine(ForceDeDeplacementAccelerSurUneSeconde());
+            }    
+        }
+            
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    private void CommencerAcceleration(InputAction.CallbackContext contexte)
-    {
-        
-    }
-
-
+ 
     /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
     private IEnumerator ForceDeDeplacementAccelerSurUneSeconde()
     {
+        chargeEnCours = true;
         float forceInitiale = forceDeplacement;
         forceDeplacement = forceAcceleration;
         yield return new WaitForSeconds(1.0f);
         forceDeplacement = forceInitiale;
+        nombreDeChargeAcceleration--;
+        chargeEnCours = false;
     }
 }
