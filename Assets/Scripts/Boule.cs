@@ -25,9 +25,21 @@ public class Boule : MonoBehaviour
     /// </summary>
     public Vector3 Velocite => rigidbody.linearVelocity;
 
+    private bool DirectionActif = false;
+
     private void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
+
+        ControleurJeu.Instance.Controles.actions.FindAction("Commencer").performed += CommencerJeu;
+
+        PlayerInput controles = ControleurJeu.Instance.Controles;
+
+        if (controles == null)
+            return;
+
+        controles.actions.FindAction("Diriger").performed += CommencerDirection;
+        controles.actions.FindAction("Diriger").canceled += ArreterDirection;
     }
 
     private void OnDestroy()
@@ -42,6 +54,7 @@ public class Boule : MonoBehaviour
 
         controles.actions.FindAction("Diriger").performed -= CommencerDirection;
         controles.actions.FindAction("Diriger").canceled -= ArreterDirection;
+        ControleurJeu.Instance.Controles.actions.FindAction("Commencer").performed -= CommencerJeu;
     }
 
     private void Update()
@@ -69,9 +82,24 @@ public class Boule : MonoBehaviour
 
     private void Diriger()
     {
+        if (!DirectionActif)
+            return;
         if(!Mathf.Approximately(forceAppliquee.sqrMagnitude, 0.0f))
         {
             rigidbody.AddForce(forceAppliquee, ForceMode.Force);
         }
+    }
+
+    /// <summary>
+    /// Methode pour commencer le jeu
+    /// source : https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Rigidbody-useGravity.html (pour use gravity)
+    /// </summary>
+    private void CommencerJeu(InputAction.CallbackContext contexte)
+    {
+        // On ne peut commencer le jeu qu'une seule fois 
+        // je me suis inspiré de la méthode commecerJeu dans informationInterface.cs
+        ControleurJeu.Instance.Controles.actions.FindAction("Commencer").performed -= CommencerJeu;
+        rigidbody.useGravity = true;
+        DirectionActif = true;
     }
 }
