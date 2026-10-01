@@ -14,6 +14,9 @@ public class Boule : MonoBehaviour
     [SerializeField, Tooltip("Force de déplacement de la boule.")]
     private float forceDeplacement;
 
+    [SerializeField, Tooltip("Force de d'accélération de la boule.")]
+    private float forceAcceleration = 15f;
+
     // Force appliquée à la boule pour le déplacement à chaque frame.
     private Vector3 forceAppliquee;
 
@@ -26,6 +29,8 @@ public class Boule : MonoBehaviour
     public Vector3 Velocite => rigidbody.linearVelocity;
 
     private bool DirectionActif = false;
+
+    private int nombreDeChargeAcceleration = 0;
 
     private void Start()
     {
@@ -40,12 +45,14 @@ public class Boule : MonoBehaviour
 
         controles.actions.FindAction("Diriger").performed += CommencerDirection;
         controles.actions.FindAction("Diriger").canceled += ArreterDirection;
+        controles.actions.FindAction("Accelerer").canceled += Accelerer;
     }
 
     private void OnDestroy()
     {
         if (ControleurJeu.Instance == null)
             return;
+        ControleurJeu.Instance.Controles.actions.FindAction("Commencer").performed -= CommencerJeu;
 
         PlayerInput controles = ControleurJeu.Instance.Controles;
 
@@ -54,7 +61,8 @@ public class Boule : MonoBehaviour
 
         controles.actions.FindAction("Diriger").performed -= CommencerDirection;
         controles.actions.FindAction("Diriger").canceled -= ArreterDirection;
-        ControleurJeu.Instance.Controles.actions.FindAction("Commencer").performed -= CommencerJeu;
+        controles.actions.FindAction("Accelerer").canceled -= Accelerer;
+        
     }
 
     private void Update()
@@ -84,6 +92,7 @@ public class Boule : MonoBehaviour
     {
         if (!DirectionActif)
             return;
+
         if(!Mathf.Approximately(forceAppliquee.sqrMagnitude, 0.0f))
         {
             rigidbody.AddForce(forceAppliquee, ForceMode.Force);
@@ -101,5 +110,48 @@ public class Boule : MonoBehaviour
         ControleurJeu.Instance.Controles.actions.FindAction("Commencer").performed -= CommencerJeu;
         rigidbody.useGravity = true;
         DirectionActif = true;
+    }
+
+    /// <summary>
+    /// Incrementer le nombre de charge d'acceleration de la boule
+    /// </summary>
+    public void IncrementerChargeAcceleration()
+    {
+        if (nombreDeChargeAcceleration <= 2)
+        {
+            nombreDeChargeAcceleration++;
+        }   
+    }
+
+    /// <summary>
+    /// Acceler la balle de 15 unite pendant une seconde
+    /// </summary>
+    private void Accelerer(InputAction.CallbackContext contexte)
+    {
+        if (!DirectionActif)
+            return;
+
+        StartCoroutine(ForceDeDeplacementAccelerSurUneSeconde());
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    private void CommencerAcceleration(InputAction.CallbackContext contexte)
+    {
+        
+    }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    private IEnumerator ForceDeDeplacementAccelerSurUneSeconde()
+    {
+        float forceInitiale = forceDeplacement;
+        forceDeplacement = forceAcceleration;
+        yield return new WaitForSeconds(1.0f);
+        forceDeplacement = forceInitiale;
     }
 }
